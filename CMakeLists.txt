@@ -190,11 +190,21 @@ CHECK_INCLUDE_FILES (dlfcn.h               HAVE_DLFCN_H)
 CHECK_INCLUDE_FILES (unistd.h              HAVE_UNISTD_H)
 
 # Include order matters for these windows files.
-CHECK_INCLUDE_FILES ("winsock2.h;windows.h"            HAVE_WINSOCK2_H)
-CHECK_INCLUDE_FILES ("winsock2.h;ws2tcpip.h;windows.h" HAVE_WS2TCPIP_H)
-CHECK_INCLUDE_FILES ("winsock.h;windows.h"             HAVE_WINSOCK_H)
-CHECK_INCLUDE_FILES (windows.h                         HAVE_WINDOWS_H)
-
+# If the platform is Cygwin and MinGW is not used, don't try to
+# find Winsock header files. You would find them but obviously
+# we shouldn't include them. Otherwise you would see a bunch of
+# conflicting types errors.
+IF (CYGWIN AND NOT MINGW)
+	SET (HAVE_WINSOCK2_H FALSE)
+	SET (HAVE_WS2TCPIP_H FALSE)
+	SET (HAVE_WINSOCK_H FALSE)
+	SET (HAVE_WINDOWS_H FALSE)
+ELSE ()
+	CHECK_INCLUDE_FILES ("winsock2.h;windows.h"            HAVE_WINSOCK2_H)
+	CHECK_INCLUDE_FILES ("winsock2.h;ws2tcpip.h;windows.h" HAVE_WS2TCPIP_H)
+	CHECK_INCLUDE_FILES ("winsock.h;windows.h"             HAVE_WINSOCK_H)
+	CHECK_INCLUDE_FILES (windows.h                         HAVE_WINDOWS_H)
+ENDIF()
 
 # Set system-specific compiler flags
 IF (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
